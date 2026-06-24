@@ -1,5 +1,7 @@
 package org.website.myproject.dto;
 
+
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,5 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CategoryDto {
     private Long id;
+
+    @Size(min = 1, max = 50, message = "Название категории пустое или слишком длинное")
     private String name;
 }

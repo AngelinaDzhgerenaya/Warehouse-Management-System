@@ -1,13 +1,16 @@
 package org.website.myproject.service;
 
-import org.website.myproject.entity.Warehouse;
+import org.website.myproject.dto.WarehouseDto;
+
 
 import java.util.List;
 
 public interface WarehouseService {
-    Warehouse create(Warehouse warehouse);
+    WarehouseDto create(WarehouseDto warehouseDto);
 
-    List<Warehouse> findAll();
+    List<WarehouseDto> findAll();
 
-    Warehouse findById(Long id);
+    WarehouseDto findById(Long id);
+
+    String delete(Long id);
 }

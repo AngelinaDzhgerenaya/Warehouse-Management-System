@@ -10,6 +10,6 @@ public interface CategoryService {
     CategoryDto create(CategoryDto categoryDto);
     List<CategoryDto> findAll();
     CategoryDto findById(Long id);
-    void delete(Long id);
+    String delete(Long id);
 
 }

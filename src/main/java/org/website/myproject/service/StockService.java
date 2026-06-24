@@ -1,11 +1,12 @@
 package org.website.myproject.service;
 
-import org.website.myproject.entity.Stock;
+import org.website.myproject.dto.StockDto;
+
 
 public interface StockService {
-    Stock getStock(Long productId, Long warehouseId);
+    StockDto getStock(Long productId, Long warehouseId);
 
-    void increase(Long productId, Long warehouseId, Integer quantity);
+    StockDto increase(StockDto stockDto);
 
-    void decrease(Long productId, Long warehouseId, Integer quantity);
+    StockDto decrease(StockDto stockDto);
 }

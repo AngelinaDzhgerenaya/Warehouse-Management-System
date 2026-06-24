@@ -2,30 +2,79 @@ package org.website.myproject.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.website.myproject.dto.StockDto;
+import org.website.myproject.entity.Product;
 import org.website.myproject.entity.Stock;
+import org.website.myproject.entity.Warehouse;
+import org.website.myproject.exceptions.ConflictException;
+import org.website.myproject.exceptions.NotFoundException;
+import org.website.myproject.mapper.StockMapper;
+import org.website.myproject.repository.ProductRepository;
 import org.website.myproject.repository.StockRepository;
+import org.website.myproject.repository.WarehouseRepository;
 import org.website.myproject.service.StockService;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class StockServiceImpl implements StockService {
     private final StockRepository stockRepository;
+    private final StockMapper stockMapper;
+
+    private final ProductRepository productRepository;
+
+    private final WarehouseRepository warehouseRepository;
 
     @Override
-    public Stock getStock(Long productId, Long warehouseId){
-        return stockRepository.findByProductAndWarehouse(productId, warehouseId);
+    public StockDto getStock(Long productId, Long warehouseId){
+        Product product = productRepository.findById(productId).orElseThrow(() ->
+                new NotFoundException("Такого продукта не существует"));
+        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(() ->
+                new NotFoundException("Такого склада не существует"));
+        Stock stock = stockRepository.findByProductAndWarehouse(product, warehouse).orElseThrow(() ->
+                new NotFoundException("Невернае данные хранилища"));
+        return stockMapper.toDto(stock);
     }
 
     @Override
-    public void increase(Long productId, Long warehouseId, Integer quantity){
-        Stock stock = getStock(productId, warehouseId);
-        stock.setQuantity(stock.getQuantity() + quantity);
-        stockRepository.save(stock);
+    @Transactional
+    public StockDto increase(StockDto stockDto) {
+        Product product = productRepository.findById(stockDto.getProductId()).orElseThrow(() ->
+                new NotFoundException("Такого продукта не существует"));
+        Warehouse warehouse = warehouseRepository.findById(stockDto.getWarehouseId()).orElseThrow(() ->
+                new NotFoundException("Такого склада не существует"));
+        Optional<Stock> stockOptional = stockRepository.findByProductAndWarehouse(product, warehouse);
+        if (stockOptional.isEmpty()) {
+            Stock newStock = Stock.builder()
+                    .product(product)
+                    .warehouse(warehouse)
+                    .quantity(stockDto.getQuantity())
+                    .reservedQuantity(0)
+                    .build();
+            Stock saved = stockRepository.save(newStock);
+            return stockMapper.toDto(saved);
+        }
+        Stock stock = stockOptional.orElseThrow();
+        stock.setQuantity(stock.getQuantity() + stockDto.getQuantity());
+        Stock saved = stockRepository.save(stock);
+        return stockMapper.toDto(saved);
     }
     @Override
-    public void decrease(Long productId, Long warehouseId, Integer quantity){
-        Stock stock = getStock(productId, warehouseId);
-        stock.setQuantity(stock.getQuantity() - quantity);
-        stockRepository.save(stock);
+    @Transactional
+    public StockDto decrease(StockDto stockDto){
+        Product product = productRepository.findById(stockDto.getProductId()).orElseThrow(() ->
+                new NotFoundException("Такого продукта не существует"));
+        Warehouse warehouse = warehouseRepository.findById(stockDto.getWarehouseId()).orElseThrow(() ->
+                new NotFoundException("Такого склада не существует"));
+        Stock stock = stockRepository.findByProductAndWarehouse(product, warehouse).orElseThrow(() ->
+                new NotFoundException("Такой продукт не хранится на этом складе"));
+        if (stock.getQuantity() < stockDto.getQuantity()){
+            throw new ConflictException("На складе не хватает товара");
+        }
+        stock.setQuantity(stock.getQuantity() - stockDto.getQuantity());
+        Stock saved = stockRepository.save(stock);
+        return stockMapper.toDto(saved);
     }
 }

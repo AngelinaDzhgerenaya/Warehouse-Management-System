@@ -2,19 +2,20 @@ package org.website.myproject.service;
 
 
 
-import org.website.myproject.entity.Product;
+import org.website.myproject.dto.ProductDto;
+
 
 import java.util.List;
 
 public interface ProductService {
 
-    Product create(Product product);
+    ProductDto create(ProductDto product);
 
-    Product findById(Long id);
+    ProductDto findById(Long id);
 
-    List<Product> findAll();
+    List<ProductDto> findAll();
 
-    Product update(Long id, Product product);
+    ProductDto update(Long id, ProductDto product);
 
-    void delete(Long id);
+    String delete(Long id);
 }
