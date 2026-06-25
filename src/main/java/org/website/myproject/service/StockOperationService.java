@@ -1,11 +1,14 @@
 package org.website.myproject.service;
 
-import org.website.myproject.entity.StockOperation;
+import org.website.myproject.dto.StockOperationDto;
+import org.website.myproject.entity.Stock;
+import org.website.myproject.enums.OperationType;
 
 import java.util.List;
 
 public interface StockOperationService {
-    StockOperation create(StockOperation operation);
+    void create(Stock stock, OperationType type, Integer quantity);
 
-    List<StockOperation> findByProduct(Long productId);
+    List<StockOperationDto> findByProduct(Long id);
+    List<StockOperationDto> findByWarehouse(Long id);
 }

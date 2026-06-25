@@ -17,4 +17,9 @@ public class WarehouseRoutes {
     public final static String STOCKSINCREASE = STOCKS + "/increase";
     public final static String STOCKSDECREASE = STOCKS + "/decrease";
 
+    public final static String STOCKOPERATIONS = ROOT + "/stocks-operations";
+    public final static String STOCKOPERATIONSPRODUCT = STOCKOPERATIONS + "/product/{id}";
+    public final static String STOCKOPERATIONSWAREHOUSE = STOCKOPERATIONS + "/warehouse/{id}";
+
+
 }
