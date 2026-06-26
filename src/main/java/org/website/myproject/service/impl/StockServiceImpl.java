@@ -7,6 +7,7 @@ import org.website.myproject.dto.StockDto;
 import org.website.myproject.entity.Product;
 import org.website.myproject.entity.Stock;
 import org.website.myproject.entity.Warehouse;
+import org.website.myproject.enums.OperationType;
 import org.website.myproject.exceptions.ConflictException;
 import org.website.myproject.exceptions.NotFoundException;
 import org.website.myproject.mapper.StockMapper;
@@ -22,6 +23,8 @@ import java.util.Optional;
 public class StockServiceImpl implements StockService {
     private final StockRepository stockRepository;
     private final StockMapper stockMapper;
+
+    private final StockOperationServiceImpl stockOperationService;
 
     private final ProductRepository productRepository;
 
@@ -54,11 +57,21 @@ public class StockServiceImpl implements StockService {
                     .reservedQuantity(0)
                     .build();
             Stock saved = stockRepository.save(newStock);
+            stockOperationService.create(
+                    saved,
+                    OperationType.IMPORT,
+                    stockDto.getQuantity()
+            );
             return stockMapper.toDto(saved);
         }
         Stock stock = stockOptional.orElseThrow();
         stock.setQuantity(stock.getQuantity() + stockDto.getQuantity());
         Stock saved = stockRepository.save(stock);
+        stockOperationService.create(
+                saved,
+                OperationType.IMPORT,
+                stockDto.getQuantity()
+        );
         return stockMapper.toDto(saved);
     }
     @Override
@@ -75,6 +88,11 @@ public class StockServiceImpl implements StockService {
         }
         stock.setQuantity(stock.getQuantity() - stockDto.getQuantity());
         Stock saved = stockRepository.save(stock);
+        stockOperationService.create(
+                saved,
+                OperationType.SALE,
+                stockDto.getQuantity()
+        );
         return stockMapper.toDto(saved);
     }
 }

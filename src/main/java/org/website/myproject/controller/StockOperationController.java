@@ -2,6 +2,7 @@ package org.website.myproject.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.website.myproject.dto.StockOperationDto;
@@ -16,12 +17,12 @@ public class StockOperationController {
     private final StockOperationService stockOperationService;
 
     @GetMapping(WarehouseRoutes.STOCKOPERATIONSPRODUCT)
-    public List<StockOperationDto> stockOperationsProduct(@RequestParam Long productId) {
-        return stockOperationService.findByProduct(productId);
+    public List<StockOperationDto> stockOperationsProduct(@PathVariable Long id) {
+        return stockOperationService.findByProduct(id);
     }
 
-    @GetMapping(WarehouseRoutes.STOCKOPERATIONSPRODUCT)
-    public List<StockOperationDto> stockOperationsWarehouse(@RequestParam Long warehouseId) {
-        return stockOperationService.findByWarehouse(warehouseId);
+    @GetMapping(WarehouseRoutes.STOCKOPERATIONSWAREHOUSE)
+    public List<StockOperationDto> stockOperationsWarehouse(@PathVariable Long id) {
+        return stockOperationService.findByWarehouse(id);
     }
 }
