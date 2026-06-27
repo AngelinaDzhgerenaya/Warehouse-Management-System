@@ -21,5 +21,9 @@ public class WarehouseRoutes {
     public final static String STOCKOPERATIONSPRODUCT = STOCKOPERATIONS + "/product/{id}";
     public final static String STOCKOPERATIONSWAREHOUSE = STOCKOPERATIONS + "/warehouse/{id}";
 
+    public final static String ORDERS = ROOT + "/orders";
+    public final static String ORDERSID = ORDERS + "/{id}";
+
+
 
 }

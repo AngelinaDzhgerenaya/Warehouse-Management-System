@@ -26,4 +26,5 @@ public class StockController {
     public StockDto decrease(@Valid @RequestBody StockDto stockDto) {
         return stockService.decrease(stockDto);
     }
+
 }

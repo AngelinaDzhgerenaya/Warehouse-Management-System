@@ -16,6 +16,7 @@ import org.website.myproject.repository.StockRepository;
 import org.website.myproject.repository.WarehouseRepository;
 import org.website.myproject.service.StockService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -94,5 +95,33 @@ public class StockServiceImpl implements StockService {
                 stockDto.getQuantity()
         );
         return stockMapper.toDto(saved);
+    }
+
+
+    @Override
+    @Transactional
+    public Long orderReserve(Long productId, Integer reservedQuantity){
+        Product product = productRepository.findById(productId).orElseThrow(() ->
+                new NotFoundException("Такого продукта не существует"));
+
+        List<Stock> stocks = stockRepository.findByProduct(product);
+
+        Stock stock = stocks.stream()
+                .filter(s -> s.getQuantity() >= reservedQuantity)
+                .findFirst()
+                .orElseThrow(() ->
+                        new NotFoundException("Нет склада с достаточным количеством товара"));
+
+        stock.setQuantity(stock.getQuantity() - reservedQuantity);
+        stock.setReservedQuantity(stock.getReservedQuantity() + reservedQuantity);
+
+        Stock saved = stockRepository.save(stock);
+
+        stockOperationService.create(
+                saved,
+                OperationType.RESERVE,
+                reservedQuantity
+        );
+        return saved.getId();
     }
 }

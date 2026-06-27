@@ -51,7 +51,6 @@ public class StockOperationServiceImpl implements StockOperationService {
 
     @Override
     public void create(Stock stock, OperationType type, Integer quantity){
-        System.out.println("Done");
         StockOperation newStockOperation = StockOperation.builder()
                 .product(stock.getProduct())
                 .warehouse(stock.getWarehouse())
