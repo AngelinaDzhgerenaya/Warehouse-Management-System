@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.website.myproject.enums.OrderStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,8 @@ public class OrderDto {
 
     @NotNull(message = "Товары обязательны")
     private List<OrderItemDto> items;
+
+    private OrderStatus status;
 
     private LocalDateTime createdAt;
 

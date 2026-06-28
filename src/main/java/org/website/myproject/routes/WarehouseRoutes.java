@@ -23,6 +23,8 @@ public class WarehouseRoutes {
 
     public final static String ORDERS = ROOT + "/orders";
     public final static String ORDERSID = ORDERS + "/{id}";
+    public final static String ORDERCONFIRM = ORDERS + "/confirm/{id}";
+    public final static String ORDERCANCEL = ORDERS + "/cancel/{id}";
 
 
 

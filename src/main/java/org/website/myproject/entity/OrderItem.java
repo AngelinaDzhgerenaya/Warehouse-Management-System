@@ -32,8 +32,9 @@ public class OrderItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @NotNull
-    private Long stockId;
+    @ManyToOne
+    @JoinColumn(name = "stock_id", nullable = false)
+    private Stock stock;
 
     @NotNull
     @Positive

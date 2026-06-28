@@ -32,7 +32,7 @@ public class StockServiceImpl implements StockService {
     private final WarehouseRepository warehouseRepository;
 
     @Override
-    public StockDto getStock(Long productId, Long warehouseId){
+    public StockDto getStock(Long productId, Long warehouseId) {
         Product product = productRepository.findById(productId).orElseThrow(() ->
                 new NotFoundException("Такого продукта не существует"));
         Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(() ->
@@ -75,16 +75,17 @@ public class StockServiceImpl implements StockService {
         );
         return stockMapper.toDto(saved);
     }
+
     @Override
     @Transactional
-    public StockDto decrease(StockDto stockDto){
+    public StockDto decrease(StockDto stockDto) {
         Product product = productRepository.findById(stockDto.getProductId()).orElseThrow(() ->
                 new NotFoundException("Такого продукта не существует"));
         Warehouse warehouse = warehouseRepository.findById(stockDto.getWarehouseId()).orElseThrow(() ->
                 new NotFoundException("Такого склада не существует"));
         Stock stock = stockRepository.findByProductAndWarehouse(product, warehouse).orElseThrow(() ->
                 new NotFoundException("Такой продукт не хранится на этом складе"));
-        if (stock.getQuantity() < stockDto.getQuantity()){
+        if (stock.getQuantity() < stockDto.getQuantity()) {
             throw new ConflictException("На складе не хватает товара");
         }
         stock.setQuantity(stock.getQuantity() - stockDto.getQuantity());
@@ -100,7 +101,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     @Transactional
-    public Long orderReserve(Long productId, Integer reservedQuantity){
+    public Long orderReserve(Long productId, Integer reservedQuantity) {
         Product product = productRepository.findById(productId).orElseThrow(() ->
                 new NotFoundException("Такого продукта не существует"));
 
@@ -123,5 +124,40 @@ public class StockServiceImpl implements StockService {
                 reservedQuantity
         );
         return saved.getId();
+    }
+
+    @Override
+    @Transactional
+    public void orderConfirm(Long stockId, Integer reservedQuantity) {
+        Stock stock = stockRepository.findById(stockId).orElseThrow();
+        if (stock.getReservedQuantity() < reservedQuantity) {
+            throw new ConflictException("Некорректный резерв");
+        }
+        stock.setReservedQuantity(stock.getReservedQuantity() - reservedQuantity);
+
+        Stock saved = stockRepository.save(stock);
+
+        stockOperationService.create(
+                saved,
+                OperationType.SALE,
+                reservedQuantity);
+    }
+
+    @Override
+    @Transactional
+    public void orderCancel(Long stockId, Integer reservedQuantity) {
+        Stock stock = stockRepository.findById(stockId).orElseThrow();
+        if (stock.getReservedQuantity() < reservedQuantity) {
+            throw new ConflictException("Некорректный резерв");
+        }
+        stock.setReservedQuantity(stock.getReservedQuantity() - reservedQuantity);
+        stock.setQuantity(stock.getQuantity() + reservedQuantity);
+
+        Stock saved = stockRepository.save(stock);
+
+        stockOperationService.create(
+                saved,
+                OperationType.RETURN,
+                reservedQuantity);
     }
 }

@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.website.myproject.dto.OrderDto;
 import org.website.myproject.dto.OrderItemDto;
-import org.website.myproject.dto.StockDto;
 import org.website.myproject.entity.*;
 import org.website.myproject.enums.OrderStatus;
+import org.website.myproject.exceptions.ConflictException;
 import org.website.myproject.exceptions.NotFoundException;
 import org.website.myproject.mapper.OrderMapper;
 import org.website.myproject.repository.*;
@@ -28,6 +28,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
 
     private final StockServiceImpl stockService;
+    private final StockRepository stockRepository;
 
 
 
@@ -43,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
         for (OrderItemDto itemDto : orderDto.getItems()) {
 
             Long stockId = stockService.orderReserve(itemDto.getProductId(), itemDto.getQuantity());
+            Stock stock = stockRepository.findById(stockId).orElseThrow();
 
             Product product = productRepository.findById(itemDto.getProductId()).orElseThrow(() ->
                     new NotFoundException("Такого продукта не существует"));
@@ -54,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
                     .order(order)
                     .product(product)
                     .quantity(itemDto.getQuantity())
-                    .stockId(stockId)
+                    .stock(stock)
                     .priceAtMoment(product.getPrice())
                     .totalPrice(total)
                     .build();
@@ -64,7 +66,6 @@ public class OrderServiceImpl implements OrderService {
         order.setItems(items);
 
         Order saved = orderRepository.save(order);
-
         return orderMapper.toDto(saved);
     }
 
@@ -75,4 +76,59 @@ public class OrderServiceImpl implements OrderService {
 
         return orderMapper.toDto(order);
     }
+
+    @Override
+    public List<OrderDto> findByStatus(OrderStatus status) {
+        List<Order> order = orderRepository.findByStatus(status);
+        if (order.isEmpty()) {
+            throw new NotFoundException("Заказов с таким статусом нет");
+        }
+        return order.stream()
+                .map(orderMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public OrderDto confirmOrder(Long orderId) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() ->
+                        new NotFoundException("Заказ не найден"));
+
+        if(order.getStatus()!=OrderStatus.NEW) {
+            throw new ConflictException("Этот заказ уже обработан");
+        }
+
+        for (OrderItem item : order.getItems()) {
+            stockService.orderConfirm(item.getStock().getId(), item.getQuantity());
+        }
+
+        order.setStatus(OrderStatus.CONFIRMED);
+
+        Order saved = orderRepository.save(order);
+        return orderMapper.toDto(saved);
+    }
+
+    @Override
+    @Transactional
+    public OrderDto cancelOrder(Long orderId) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() ->
+                        new NotFoundException("Заказ не найден"));
+
+        if(order.getStatus()!=OrderStatus.NEW) {
+            throw new ConflictException("Этот заказ уже обработан");
+        }
+        for (OrderItem item : order.getItems()) {
+            stockService.orderCancel(item.getStock().getId(), item.getQuantity());
+        }
+
+        order.setStatus(OrderStatus.CANCELED);
+
+        Order saved = orderRepository.save(order);
+        return orderMapper.toDto(saved);
+    }
+
 }

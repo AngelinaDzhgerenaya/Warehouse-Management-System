@@ -12,4 +12,8 @@ public interface StockService {
     StockDto decrease(StockDto stockDto);
 
     Long orderReserve(Long productId, Integer reservedQuantity);
+
+    void orderConfirm(Long stockId, Integer reservedQuantity);
+
+    void orderCancel(Long stockId, Integer reservedQuantity);
 }

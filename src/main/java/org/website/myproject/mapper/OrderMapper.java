@@ -19,6 +19,7 @@ public class OrderMapper {
                         .stream()
                         .map(this::mapItem)
                         .toList(),
+                order.getStatus(),
                 order.getCreatedAt()
         );
     }
@@ -26,7 +27,7 @@ public class OrderMapper {
         return new OrderItemDto(
                 item.getId(),
                 item.getProduct().getId(),
-                item.getStockId(),
+                item.getStock().getId(),
                 item.getQuantity(),
                 item.getPriceAtMoment(),
                 item.getTotalPrice()
