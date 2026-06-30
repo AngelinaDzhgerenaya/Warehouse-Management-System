@@ -20,6 +20,7 @@ public class OrderMapper {
                         .map(this::mapItem)
                         .toList(),
                 order.getStatus(),
+                order.getTotalAmount(),
                 order.getCreatedAt()
         );
     }

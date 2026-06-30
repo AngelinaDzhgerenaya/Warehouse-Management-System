@@ -41,6 +41,8 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         List<OrderItem> items = new ArrayList<>();
 
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
         for (OrderItemDto itemDto : orderDto.getItems()) {
 
             Long stockId = stockService.orderReserve(itemDto.getProductId(), itemDto.getQuantity());
@@ -62,8 +64,10 @@ public class OrderServiceImpl implements OrderService {
                     .build();
 
             items.add(orderItem);
+            totalAmount = totalAmount.add(total);
         }
         order.setItems(items);
+        order.setTotalAmount(totalAmount);
 
         Order saved = orderRepository.save(order);
         return orderMapper.toDto(saved);
